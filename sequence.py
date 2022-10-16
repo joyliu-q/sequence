@@ -152,9 +152,7 @@ class Sequence:
     return count
 
   def check_unneeded_cards(self, player):
-    for card in self.hands[player]:
-      if self.count_occupied(card) == 0:
-        return True
+    return [card for card in self.hands[player] if self.count_occupied(card) >= 2]
 
   # TODO: do this
   def render(self):
@@ -168,6 +166,14 @@ class Sequence:
 
   def play(self):
     while not self.has_winner(self.last_move):
+      unneeded = self.check_unneeded_cards(self.turn)
+      replace = self.players[self.turn].get_replacements(unneeded)
+      while len(replace) > 0:
+        for card in replace:
+          self.hands[self.turn].remove(card)
+          self.hands[self.turn].append(self.deck.draw())
+        unneeded = self.check_unneeded_cards(self.turn)
+        replace = self.players[self.turn].get_replacements(unneeded)
       position, card = self.players[self.turn].get_move(self.board, self.last_move, self.hands[self.turn])
       self.hands[self.turn].remove(card)
       if not self.make_move(position):
