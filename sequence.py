@@ -1,99 +1,13 @@
-from enum import Enum
 import random
+from cards import Suit, Card, Deck
 
-class Suit(Enum):
-  SPADE = 1
-  HEART = 2
-  CLUB = 3
-  DIAMOND = 4
+# TODO: Arbitrary agent
+class Agent1():
+  def __init__(self):
+    pass
 
-class Card:
-  def __init__(self, rank=1, suit=Suit.SPADE):
-    self.rank = rank # 0 = joker, 1 = ace, 2 = 2, ..., 10 = 10, 11 = jack, 12 = queen, 13 = king
-    self.suit = suit # 1 = spades, 2 = hearts, 3 = clubs, 4 = diamonds
-
-  def get_rank_str(self):
-    if self.rank == 0:
-      return 'X'
-    elif self.rank == 1:
-      return 'A'
-    elif self.rank == 10:
-      return 'T'
-    elif self.rank == 11:
-      return 'J'
-    elif self.rank == 12:
-      return 'Q'
-    elif self.rank == 13:
-      return 'K'
-    else:
-      return str(self.rank)
-
-  def __str__(self):
-    print(self.suit)
-    out = self.get_rank_str()
-    if self.suit.value == 1:
-      return out + 's'
-    elif self.suit.value == 2:
-      return out + 'h'
-    elif self.suit.value == 3:
-      return out + 'c'
-    elif self.suit.value == 4:
-      return out + 'd'
-
-  def __lt__(self, other):
-    if not isinstance(other, self.__class__):
-      return False
-    if self.suit == other.suit:
-      return self.rank < other.rank
-    return self.suit < other.suit
-  
-  def __hash__(self):
-    return 14 * self.suit.value + self.rank
-
-  def __eq__(self, other):
-    if not isinstance(other, self.__class__):
-      return False
-    return self.rank == other.rank and self.suit == other.suit
-
-  def __ne__(self, other):
-    return not self.__eq__(other)
-
-class Deck:
-  def __init__(self, stacks=1, jokers=True, shuffle=True):
-    self.deck = []
-    self.count = stacks * (54 if jokers else 52)
-    for _ in range(stacks):
-      for i in range(1, 13):
-        for suit in Suit:
-          self.deck.append(Card(i, suit))
-      if jokers:
-        self.deck.append(Card(0, Suit.SPADE))
-        self.deck.append(Card(0, Suit.SPADE))
-    if shuffle:
-      self.shuffle()
-  
-  def num_cards_remaining(self):
-    return self.count
-  
-  def draw(self):
-    self.count -= 1
-    value = self.deck.pop(0)
-    if self.count == 0:
-      self.deck = Deck(stacks=self.stacks, jokers=self.jokers, shuffle=False).deck
-    return value
-    
-  def shuffle(self):
-    random.shuffle(self.deck)
-    
-  def __eq__(self, other):
-    if not isinstance(other, self.__class__):
-      return False
-    if self.count != other.count:
-      return False
-    return self.deck == other.deck
-
-  def __ne__(self, other):
-    return not self.__eq__(other)
+  def get_move(self):
+    pass
 
 class Cell:
   def __init__(self, card):
@@ -121,13 +35,6 @@ class Cell:
     else:
       return str(self.card)
 
-class Agent1():
-  def __init__(self):
-    pass
-
-  def get_move(self):
-    pass
-
 # Sequence game class
 class Sequence:
 
@@ -144,7 +51,7 @@ class Sequence:
       [Card(0, Suit.SPADE), Card(1, Suit.DIAMOND), Card(13, Suit.DIAMOND), Card(12, Suit.DIAMOND), Card(10, Suit.DIAMOND), Card(9, Suit.DIAMOND), Card(8, Suit.DIAMOND), Card(7, Suit.DIAMOND), Card(6, Suit.DIAMOND), Card(0, Suit.SPADE)]
     ]
 
-  def __init__(self, pause_switch_turn=False):
+  def __init__(self, switch_turn=True):
     self.board = [[Cell(c) for c in row] for row in Sequence.CARD_POSITIONS]
     self.height = len(self.board)
     self.width = len(self.board[0])
@@ -155,7 +62,7 @@ class Sequence:
     self.players = [Agent1(), Agent1()]
     self.turn = 0
     self.fives = [0, 0] # [Green, Blue]
-    self.pause_switch_turn = pause_switch_turn
+    self.switch_turn = switch_turn
     self.last_move = None
     self.deck = Deck(2, jokers=False, shuffle=True)
     self.hands = [[], []]
@@ -179,17 +86,6 @@ class Sequence:
     self.board[row][col].claim(self.turn)
     self.last_move = position
     return True
-  
-  def has_winner(self):
-    return self.fives[0] >= 2 or self.fives[1] >= 2
-
-  def get_winner(self):
-    if self.fives[0] >= 2:
-      return 0
-    elif self.fives[1] >= 2:
-      return 1
-    else:
-      return None
 
   def check_winner(self, position): # given that the current move is made, is there a winner
     if position == None:
@@ -239,6 +135,18 @@ class Sequence:
 
     return self.has_winner()
   
+  # State retrieval functions 
+  def has_winner(self):
+    return self.fives[0] >= 2 or self.fives[1] >= 2
+
+  def get_winner(self):
+    if self.fives[0] >= 2:
+      return 0
+    elif self.fives[1] >= 2:
+      return 1
+    else:
+      return None
+  
   def switch_turn(self):
     self.turn = int(not self.turn)
 
@@ -258,7 +166,7 @@ class Sequence:
       if not self.make_move(position):
         raise Exception('Invalid move')
       self.check_winner(position)
-      if not self.pause_switch_turn:
+      if self.switch_turn:
         self.switch_turn()
       print(self) # Instead of self.render() temporarily
     print('Game over!')
@@ -274,37 +182,37 @@ def make_moves(sequence, moves):
 
 # Test check_winner
 # Test 1: 5 in a row horizontally
-s1 = Sequence(pause_switch_turn=True)
+s1 = Sequence(switch_turn=False)
 moves = [(1, 1), (1, 2), (1, 3), (1, 4), (1, 5), (2, 1), (2, 2), (2, 3), (2, 4), (2, 5)]
 s1 = make_moves(s1, moves)
 assert s1.has_winner() == True
 
 # Test 2: 5 in a row vertically
-s2 = Sequence(pause_switch_turn=True)
+s2 = Sequence(switch_turn=False)
 moves = [(1, 1), (2, 1), (3, 1), (4, 1), (5, 1), (2, 1), (2, 2), (2, 3), (2, 4), (2, 5)]
 s2 = make_moves(s2, moves)
 assert s2.has_winner() == True
 
 # Test 3: 5 in a row diagonally
-s3 = Sequence(pause_switch_turn=True)
+s3 = Sequence(switch_turn=False)
 moves = [(1, 1), (2, 2), (3, 3), (4, 4), (5, 5), (2, 1), (3, 2), (4, 3), (5, 4), (6, 5)]
 s3 = make_moves(s3, moves)
 assert s3.has_winner() == True
 
 # Test 4: Multiple 5 in a row
-s4 = Sequence(pause_switch_turn=True)
+s4 = Sequence(switch_turn=False)
 moves = [(1, 1), (2, 2), (3, 3), (4, 4), (5, 5), (6, 6), (7, 7), (8, 8), (9, 9), (2, 1), (3, 2), (4, 3), (5, 4), (6, 5), (7, 6), (8, 7), (9, 8), (10, 9)]
 s4 = make_moves(s4, moves)
 assert s4.has_winner() == True
 
 # Test 5: 5 in a row with corners
-s5 = Sequence(pause_switch_turn=True)
+s5 = Sequence(switch_turn=False)
 moves = [(0, 0), (1, 1), (2, 2), (3, 3), (4, 4), (9, 0), (9, 1), (9, 2), (9, 3), (9, 4)]
 s5 = make_moves(s5, moves)
 assert s5.has_winner() == True
 
 # Test 6: No 5 in a row
-s6 = Sequence(pause_switch_turn=True)
+s6 = Sequence(switch_turn=False)
 moves = [(1, 1), (3, 2), (2, 3), (4, 4), (5, 5)]
 s6 = make_moves(s6, moves)
 assert s6.has_winner() == False
