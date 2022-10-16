@@ -1,14 +1,6 @@
 import random
 from cards import Suit, Card, Deck
 
-# TODO: Arbitrary agent
-class Agent1():
-  def __init__(self):
-    pass
-
-  def get_move(self):
-    pass
-
 class Cell:
   def __init__(self, card):
     self.card = card
@@ -84,6 +76,7 @@ class Sequence:
     if self.board[row][col].occupied != None:
       return False
     self.board[row][col].claim(self.turn)
+    self.hands[self.turn].append(self.deck.draw())
     self.last_move = position
     return True
 
@@ -137,7 +130,7 @@ class Sequence:
   
   # State retrieval functions 
   def has_winner(self):
-    return self.fives[0] >= 2 or self.fives[1] >= 2
+    return self.get_winner() != None
 
   def get_winner(self):
     if self.fives[0] >= 2:
@@ -147,8 +140,21 @@ class Sequence:
     else:
       return None
   
-  def switch_turn(self):
+  def change_turn(self):
     self.turn = int(not self.turn)
+
+  def count_occupied(self, card):
+    count = 0
+    for row in self.board:
+      for cell in row:
+        if cell.occupied != None and cell.card == card:
+          count += 1
+    return count
+
+  def check_unneeded_cards(self, player):
+    for card in self.hands[player]:
+      if self.count_occupied(card) == 0:
+        return True
 
   # TODO: do this
   def render(self):
@@ -162,14 +168,16 @@ class Sequence:
 
   def play(self):
     while not self.has_winner(self.last_move):
-      position = self.players[self.turn].get_move(self.board, self.last_move, self.hands[self.turn])
+      position, card = self.players[self.turn].get_move(self.board, self.last_move, self.hands[self.turn])
+      self.hands[self.turn].remove(card)
       if not self.make_move(position):
         raise Exception('Invalid move')
       self.check_winner(position)
       if self.switch_turn:
-        self.switch_turn()
+        self.change_turn()
       print(self) # Instead of self.render() temporarily
     print('Game over!')
+    print('Winner is player {}'.format(self.get_winner()))
 
 
 # TEST LOGIC BELOW 
