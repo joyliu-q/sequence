@@ -166,7 +166,7 @@ class Sequence:
     return out
 
   def play(self):
-    while not self.has_winner(self.last_move):
+    while not self.has_winner():
       unneeded = self.check_unneeded_cards(self.turn)
       replace = self.players[self.turn].get_replacements(unneeded)
       while len(replace) > 0:
@@ -247,3 +247,6 @@ class SequenceTest:
     print("All tests passed for check_winner!")
 
 SequenceTest.check_winner()
+
+seq = Sequence()
+seq.play()
