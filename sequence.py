@@ -181,46 +181,62 @@ class Sequence:
 
 
 # TEST LOGIC BELOW 
-def make_moves(sequence, moves):
-  random.shuffle(moves)
-  for move in moves:
-    sequence.make_move(move)
-    sequence.check_winner(move)
-  return sequence
+class SequenceTest:
+  def check_winner():
+    def make_moves(sequence, moves, switch_turn=True):
+      random.shuffle(moves)
+      for move in moves:
+        sequence.make_move(move)
+        sequence.check_winner(move)
+        if switch_turn:
+          sequence.change_turn()
+      return sequence
 
-# Test check_winner
-# Test 1: 5 in a row horizontally
-s1 = Sequence(switch_turn=False)
-moves = [(1, 1), (1, 2), (1, 3), (1, 4), (1, 5), (2, 1), (2, 2), (2, 3), (2, 4), (2, 5)]
-s1 = make_moves(s1, moves)
-assert s1.has_winner() == True
+    # Test check_winner
+    # Test 1: 5 in a row horizontally
+    switch_turn = False
+    s1 = Sequence(switch_turn)
+    moves = [(1, 1), (1, 2), (1, 3), (1, 4), (1, 5), (2, 1), (2, 2), (2, 3), (2, 4), (2, 5)]
+    s1 = make_moves(s1, moves, switch_turn)
+    assert s1.has_winner() == True
 
-# Test 2: 5 in a row vertically
-s2 = Sequence(switch_turn=False)
-moves = [(1, 1), (2, 1), (3, 1), (4, 1), (5, 1), (2, 1), (2, 2), (2, 3), (2, 4), (2, 5)]
-s2 = make_moves(s2, moves)
-assert s2.has_winner() == True
+    # Test 2: 5 in a row vertically
+    s2 = Sequence(switch_turn)
+    moves = [(1, 1), (2, 1), (3, 1), (4, 1), (5, 1), (2, 1), (2, 2), (2, 3), (2, 4), (2, 5)]
+    s2 = make_moves(s2, moves, switch_turn)
+    assert s2.has_winner() == True
 
-# Test 3: 5 in a row diagonally
-s3 = Sequence(switch_turn=False)
-moves = [(1, 1), (2, 2), (3, 3), (4, 4), (5, 5), (2, 1), (3, 2), (4, 3), (5, 4), (6, 5)]
-s3 = make_moves(s3, moves)
-assert s3.has_winner() == True
+    # Test 3: 5 in a row diagonally
+    s3 = Sequence(switch_turn)
+    moves = [(1, 1), (2, 2), (3, 3), (4, 4), (5, 5), (2, 1), (3, 2), (4, 3), (5, 4), (6, 5)]
+    s3 = make_moves(s3, moves, switch_turn)
+    assert s3.has_winner() == True
 
-# Test 4: Multiple 5 in a row
-s4 = Sequence(switch_turn=False)
-moves = [(1, 1), (2, 2), (3, 3), (4, 4), (5, 5), (6, 6), (7, 7), (8, 8), (9, 9), (2, 1), (3, 2), (4, 3), (5, 4), (6, 5), (7, 6), (8, 7), (9, 8), (10, 9)]
-s4 = make_moves(s4, moves)
-assert s4.has_winner() == True
+    # Test 4: Multiple 5 in a row
+    s4 = Sequence(switch_turn)
+    moves = [(1, 1), (2, 2), (3, 3), (4, 4), (5, 5), (6, 6), (7, 7), (8, 8), (9, 9), (2, 1), (3, 2), (4, 3), (5, 4), (6, 5), (7, 6), (8, 7), (9, 8), (10, 9)]
+    s4 = make_moves(s4, moves, switch_turn)
+    assert s4.has_winner() == True
 
-# Test 5: 5 in a row with corners
-s5 = Sequence(switch_turn=False)
-moves = [(0, 0), (1, 1), (2, 2), (3, 3), (4, 4), (9, 0), (9, 1), (9, 2), (9, 3), (9, 4)]
-s5 = make_moves(s5, moves)
-assert s5.has_winner() == True
+    # Test 5: 5 in a row with corners
+    s5 = Sequence(switch_turn)
+    moves = [(0, 0), (1, 1), (2, 2), (3, 3), (4, 4), (9, 0), (9, 1), (9, 2), (9, 3), (9, 4)]
+    s5 = make_moves(s5, moves, switch_turn)
+    assert s5.has_winner() == True
 
-# Test 6: No 5 in a row
-s6 = Sequence(switch_turn=False)
-moves = [(1, 1), (3, 2), (2, 3), (4, 4), (5, 5)]
-s6 = make_moves(s6, moves)
-assert s6.has_winner() == False
+    # Test 6: No 5 in a row
+    s6 = Sequence(switch_turn)
+    moves = [(1, 1), (3, 2), (2, 3), (4, 4), (5, 5)]
+    s6 = make_moves(s6, moves, switch_turn)
+    assert s6.has_winner() == False
+
+    # Test 7: 5 in a row but separate players
+    switch_turn = True
+    s7 = Sequence(switch_turn)
+    moves = [(1, 1), (1, 2), (1, 3), (1, 4), (1, 5), (9, 0), (9, 1), (9, 2), (9, 3), (9, 4)]
+    s7 = make_moves(s7, moves, switch_turn)
+    assert s7.has_winner() == False
+
+    print("All tests passed for check_winner!")
+
+SequenceTest.check_winner()
