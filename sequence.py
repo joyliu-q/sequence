@@ -228,6 +228,6 @@ class Sequence:
   def __str__(self):
     out = ''
     for row in self.board:
-      out += ' '.join(row) + '\n'
+      out += ' '.join(map(str, row)) + '\n'
     return out
 
