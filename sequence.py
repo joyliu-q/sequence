@@ -118,6 +118,13 @@ class Cell:
     else:
       return str(self.card)
 
+class Agent1():
+  def __init__(self):
+    pass
+
+  def get_move(self):
+    pass
+
 # Sequence game class
 class Sequence:
 
@@ -133,7 +140,7 @@ class Sequence:
       [Card(1, Suit.CLUB), Card(7, Suit.SPADE), Card(6, Suit.SPADE), Card(5, Suit.SPADE), Card(4, Suit.SPADE), Card(3, Suit.SPADE), Card(2, Suit.SPADE), Card(2, Suit.HEART), Card(3, Suit.HEART), Card(5, Suit.DIAMOND)],
       [Card(0, Suit.SPADE), Card(1, Suit.DIAMOND), Card(13, Suit.DIAMOND), Card(12, Suit.DIAMOND), Card(10, Suit.DIAMOND), Card(9, Suit.DIAMOND), Card(8, Suit.DIAMOND), Card(7, Suit.DIAMOND), Card(6, Suit.DIAMOND), Card(0, Suit.SPADE)]
     ]
-  
+
   def __init__(self, pause_switch_turn=False):
     self.board = [[Cell(c) for c in row] for row in Sequence.CARD_POSITIONS]
     self.height = len(self.board)
@@ -142,9 +149,19 @@ class Sequence:
     self.board[-1][0].claim(2)
     self.board[0][-1].claim(2)
     self.board[-1][-1].claim(2)
+    self.players = [Agent1(), Agent1()]
     self.turn = 0
     self.fives = [0, 0] # [Green, Blue]
     self.pause_switch_turn = pause_switch_turn
+    self.last_move = None
+    self.deck = Deck(2, jokers=False, shuffle=True)
+    self.hands = [[], []]
+    for _ in range(7):
+      self.hands[0].append(self.deck.draw())
+      self.hands[1].append(self.deck.draw())
+    
+  def get_hand(self, player):
+    return self.hands[player]
 
   def make_move(self, position):
     # If winner is already decided, don't allow any more moves
@@ -157,10 +174,7 @@ class Sequence:
     if self.board[row][col].occupied != None:
       return False
     self.board[row][col].claim(self.turn)
-    if self.check_winner((row, col)):
-      print("There's a winner, omg!")
-    if not self.pause_switch_turn:
-      self.switch_turn()
+    self.last_move = position
     return True
   
   def has_winner(self):
@@ -175,6 +189,8 @@ class Sequence:
       return None
 
   def check_winner(self, position): # given that the current move is made, is there a winner
+    if position == None:
+      return False
     row_offset = [(0, -4), (0, -3), (0, -2), (0, -1), (0, 0), (0, 1), (0, 2), (0, 3), (0, 4)]
     col_offset = [(-4, 0), (-3, 0), (-2, 0), (-1, 0), (0, 0), (1, 0), (2, 0), (3, 0), (4, 0)]
     diag_offset = [(-4, -4), (-3, -3), (-2, -2), (-1, -1), (0, 0), (1, 1), (2, 2), (3, 3), (4, 4)]
@@ -230,12 +246,21 @@ class Sequence:
   def render(self):
     pass
   
-  # TODO: do this
   def __str__(self):
     out = ''
     for row in self.board:
       out += ' '.join(map(str, row)) + '\n'
     return out
+
+  def play(self):
+    while not self.has_winner(self.last_move):
+      position = self.players[self.turn].get_move(self.board, self.last_move, self.hands[self.turn])
+      if not self.make_move(position):
+        raise Exception('Invalid move')
+      if not self.pause_switch_turn:
+        self.switch_turn()
+      print(self) # Instead of self.render() temporarily
+    print('Game over!')
 
 
 # TEST LOGIC BELOW 
