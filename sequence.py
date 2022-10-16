@@ -1,7 +1,6 @@
 from cards import Suit, Card, Deck
-from agent import *
-import random
-import time
+from agents import *
+import random, time
 
 class Cell:
   def __init__(self, card):
@@ -78,7 +77,7 @@ class Sequence:
     row, col = position
     if row < 0 or row >= self.height or col < 0 or col >= self.width:
       return False
-    if self.board[row][col].occupied != None:
+    if self.board[row][col].is_occupied():
       return False
     self.board[row][col].claim(self.turn)
     self.hands[self.turn].append(self.deck.draw())
@@ -152,7 +151,7 @@ class Sequence:
     count = 0
     for row in self.board:
       for cell in row:
-        if cell.occupied != None and cell.card == card:
+        if cell.is_occupied() and cell.card == card:
           count += 1
     return count
 
@@ -163,7 +162,7 @@ class Sequence:
   def render(self):
     print(self)
     print('\n\n\n\n\n\n\n\n') # TODO: keep this
-    time.sleep(1)
+    time.sleep(0.5)
   
   def __str__(self):
     out = ''
@@ -184,7 +183,7 @@ class Sequence:
         replace = self.players[self.turn].get_replacements(unneeded)
       position, card = self.players[self.turn].get_move(self.board, self.last_move, self.hands[self.turn])
       self.hands[self.turn].remove(card)
-      if not self.make_move(position):
+      if position == None or not self.make_move(position):
         raise Exception('Invalid move')
       self.check_winner(position)
       if self.switch_turn:
