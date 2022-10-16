@@ -180,46 +180,43 @@ class Sequence:
     diag_offset = [(-4, -4), (-3, -3), (-2, -2), (-1, -1), (0, 0), (1, 1), (2, 2), (3, 3), (4, 4)]
 
     row, col = position
-    print("Checking winner at position", position)
 
     row_acc = 0
     # In all tiles in row offset, if there's any consecutive 5 of the same occupied, increment by 1
     for offset in row_offset:
       new_pos = (row + offset[0], col + offset[1])
-      print("Checking row offset", offset, "at position", new_pos)
       if new_pos[0] < 0 or new_pos[0] >= self.height or new_pos[1] < 0 or new_pos[1] >= self.width:
         continue
-      if self.board[new_pos[0]][new_pos[1]].occupied == self.turn:
+      if self.board[new_pos[0]][new_pos[1]].occupied == self.turn or self.board[new_pos[0]][new_pos[1]].occupied == 2:
         row_acc += 1
+        if row_acc == 5:
+          self.fives[self.turn] += 1
       else:
         row_acc = 0
-      if row_acc == 5:
-        self.fives[self.turn] += 1
-      print("Row acc is now", row_acc)
     
     col_acc = 0
     for offset in col_offset:
       new_pos = (row + offset[0], col + offset[1])
       if new_pos[0] < 0 or new_pos[0] >= self.height or new_pos[1] < 0 or new_pos[1] >= self.width:
         continue
-      if self.board[new_pos[0]][new_pos[1]].occupied == self.turn:
+      if self.board[new_pos[0]][new_pos[1]].occupied == self.turn or self.board[new_pos[0]][new_pos[1]].occupied == 2:
         col_acc += 1
+        if col_acc == 5:
+          self.fives[self.turn] += 1
       else:
         col_acc = 0
-      if col_acc == 5:
-        self.fives[self.turn] += 1
     
     diag_acc = 0
     for offset in diag_offset:
       new_pos = (row + offset[0], col + offset[1])
       if new_pos[0] < 0 or new_pos[0] >= self.height or new_pos[1] < 0 or new_pos[1] >= self.width:
         continue
-      if self.board[new_pos[0]][new_pos[1]].occupied == self.turn:
+      if self.board[new_pos[0]][new_pos[1]].occupied == self.turn or self.board[new_pos[0]][new_pos[1]].occupied == 2:
         diag_acc += 1
+        if diag_acc == 5:
+          self.fives[self.turn] += 1
       else:
         diag_acc = 0
-      if diag_acc == 5:
-        self.fives[self.turn] += 1
 
     return self.has_winner()
   
@@ -248,31 +245,31 @@ def make_moves(sequence, moves):
 # Test check_winner
 # Test 1: 5 in a row horizontally
 s1 = Sequence(pause_switch_turn=True)
-moves = [(1, 1), (1, 2), (1, 3), (1, 4), (1, 5)]
+moves = [(1, 1), (1, 2), (1, 3), (1, 4), (1, 5), (2, 1), (2, 2), (2, 3), (2, 4), (2, 5)]
 s1 = make_moves(s1, moves)
 assert s1.has_winner() == True
 
 # Test 2: 5 in a row vertically
 s2 = Sequence(pause_switch_turn=True)
-moves = [(1, 1), (2, 1), (3, 1), (4, 1), (5, 1)]
+moves = [(1, 1), (2, 1), (3, 1), (4, 1), (5, 1), (2, 1), (2, 2), (2, 3), (2, 4), (2, 5)]
 s2 = make_moves(s2, moves)
 assert s2.has_winner() == True
 
 # Test 3: 5 in a row diagonally
 s3 = Sequence(pause_switch_turn=True)
-moves = [(1, 1), (2, 2), (3, 3), (4, 4), (5, 5)]
+moves = [(1, 1), (2, 2), (3, 3), (4, 4), (5, 5), (2, 1), (3, 2), (4, 3), (5, 4), (6, 5)]
 s3 = make_moves(s3, moves)
 assert s3.has_winner() == True
 
 # Test 4: Multiple 5 in a row
 s4 = Sequence(pause_switch_turn=True)
-moves = [(1, 1), (2, 2), (3, 3), (4, 4), (5, 5), (6, 6), (7, 7), (8, 8), (9, 9)]
+moves = [(1, 1), (2, 2), (3, 3), (4, 4), (5, 5), (6, 6), (7, 7), (8, 8), (9, 9), (2, 1), (3, 2), (4, 3), (5, 4), (6, 5), (7, 6), (8, 7), (9, 8), (10, 9)]
 s4 = make_moves(s4, moves)
 assert s4.has_winner() == True
 
 # Test 5: 5 in a row with corners
 s5 = Sequence(pause_switch_turn=True)
-moves = [(0, 0), (1, 1), (2, 2), (3, 3), (4, 4)]
+moves = [(0, 0), (1, 1), (2, 2), (3, 3), (4, 4), (9, 0), (9, 1), (9, 2), (9, 3), (9, 4)]
 s5 = make_moves(s5, moves)
 assert s5.has_winner() == True
 
