@@ -254,6 +254,7 @@ class Sequence:
       position = self.players[self.turn].get_move(self.board, self.last_move, self.hands[self.turn])
       if not self.make_move(position):
         raise Exception('Invalid move')
+      self.check_winner(position)
       if not self.pause_switch_turn:
         self.switch_turn()
       print(self) # Instead of self.render() temporarily
@@ -265,6 +266,7 @@ def make_moves(sequence, moves):
   random.shuffle(moves)
   for move in moves:
     sequence.make_move(move)
+    sequence.check_winner(move)
   return sequence
 
 # Test check_winner
