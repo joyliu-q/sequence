@@ -29,14 +29,16 @@ class Card:
       return str(self.rank)
 
   def __str__(self):
-    if self.suit == 1:
-      return self.rank + 's'
-    elif self.suit == 2:
-      return self.rank + 'h'
-    elif self.suit == 3:
-      return self.rank + 'c'
-    elif self.suit == 4:
-      return self.rank + 'd'
+    print(self.suit)
+    out = self.get_rank_str()
+    if self.suit.value == 1:
+      return out + 's'
+    elif self.suit.value == 2:
+      return out + 'h'
+    elif self.suit.value == 3:
+      return out + 'c'
+    elif self.suit.value == 4:
+      return out + 'd'
 
   def __lt__(self, other):
     if not isinstance(other, self.__class__):
@@ -109,7 +111,12 @@ class Cell:
   def __str__(self):
     if self.occupied == 0:
       return '00'
-    elif self.occupied == 
+    elif self.occupied == 1:
+      return '11'
+    elif self.occupied == 2:
+      return '**'
+    else:
+      return str(self.card)
 
 # Sequence game class
 class Sequence:
@@ -128,7 +135,7 @@ class Sequence:
     ]
   
   def __init__(self):
-    self.board = [Cell(c) for c in Sequence.CARD_POSITIONS]
+    self.board = [[Cell(c) for c in row] for row in Sequence.CARD_POSITIONS]
     self.height = len(self.board)
     self.width = len(self.board[0])
     self.board[0][0].claim(2)
@@ -221,4 +228,6 @@ class Sequence:
   def __str__(self):
     out = ''
     for row in self.board:
-      for cell in row:
+      out += ' '.join(row) + '\n'
+    return out
+
