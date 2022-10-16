@@ -77,7 +77,10 @@ class Deck:
   
   def draw(self):
     self.count -= 1
-    return self.deck.pop(0)
+    value = self.deck.pop(0)
+    if self.count == 0:
+      self.deck = Deck(stacks=self.stacks, jokers=self.jokers, shuffle=False).deck
+    return value
     
   def shuffle(self):
     random.shuffle(self.deck)
