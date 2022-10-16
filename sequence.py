@@ -1,5 +1,6 @@
-import random
 from cards import Suit, Card, Deck
+from agent import *
+import random
 
 class Cell:
   def __init__(self, card):
@@ -51,7 +52,7 @@ class Sequence:
     self.board[-1][0].claim(2)
     self.board[0][-1].claim(2)
     self.board[-1][-1].claim(2)
-    self.players = [Agent1(), Agent1()]
+    self.players = [RandAgent(), RandAgent()]
     self.turn = 0
     self.fives = [0, 0] # [Green, Blue]
     self.switch_turn = switch_turn
