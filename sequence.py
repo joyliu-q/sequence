@@ -1,6 +1,7 @@
 from cards import Suit, Card, Deck
 from agent import *
 import random
+import time
 
 class Cell:
   def __init__(self, card):
@@ -157,7 +158,8 @@ class Sequence:
 
   # TODO: do this
   def render(self):
-    pass
+    print(str(self), end="\r")
+    time.sleep(0.5)
   
   def __str__(self):
     out = ''
@@ -166,6 +168,7 @@ class Sequence:
     return out
 
   def play(self):
+    self.render()
     while not self.has_winner():
       unneeded = self.check_unneeded_cards(self.turn)
       replace = self.players[self.turn].get_replacements(unneeded)
@@ -182,10 +185,12 @@ class Sequence:
       self.check_winner(position)
       if self.switch_turn:
         self.change_turn()
-      print(self) # Instead of self.render() temporarily
+    self.render()
     print('Game over!')
     print('Winner is player {}'.format(self.get_winner()))
 
+seq = Sequence()
+seq.play()
 
 # TEST LOGIC BELOW 
 class SequenceTest:
