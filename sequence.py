@@ -7,6 +7,9 @@ class Cell:
   def __init__(self, card):
     self.card = card
     self.occupied = None # occupied is either None, Green (0), or Blue (1), or Both (2)
+
+  def get_card(self):
+    return self.card
   
   def claim(self, player):
     if player != 0 and player != 1 and player != 2:
@@ -158,8 +161,9 @@ class Sequence:
 
   # TODO: do this
   def render(self):
-    print(str(self), end="\r")
-    time.sleep(0.5)
+    print(self)
+    print('\n\n\n\n\n\n\n\n') # TODO: keep this
+    time.sleep(1)
   
   def __str__(self):
     out = ''
@@ -185,7 +189,7 @@ class Sequence:
       self.check_winner(position)
       if self.switch_turn:
         self.change_turn()
-    self.render()
+      self.render()
     print('Game over!')
     print('Winner is player {}'.format(self.get_winner()))
 

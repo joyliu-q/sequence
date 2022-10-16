@@ -29,7 +29,6 @@ class Card:
       return str(self.rank)
 
   def __str__(self):
-    print(self.suit)
     out = self.get_rank_str()
     if self.suit.value == 1:
       return out + 's'
@@ -77,10 +76,10 @@ class Deck:
   
   def draw(self):
     self.count -= 1
-    value = self.deck.pop(0)
+    card = self.deck.pop(0)
     if self.count == 0:
       self.deck = Deck(stacks=self.stacks, jokers=self.jokers, shuffle=False).deck
-    return value
+    return card
     
   def shuffle(self):
     random.shuffle(self.deck)
