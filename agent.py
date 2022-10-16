@@ -17,6 +17,6 @@ class RandAgent():
     print(choice)
     for r in range(len(board)):
       for c in range(len(board[0])):
-        if board[r][c].occupied == None and board[r][c].get_card() == choice:
+        if not board[r][c].is_occupied() and board[r][c].get_card() == choice:
           return (r, c), choice
     return None, choice

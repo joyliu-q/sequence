@@ -19,8 +19,8 @@ class Cell:
   def unclaim(self): # If there's a one-eye jack
     self.occupied = None
 
-  def occupied(self):
-    return self.occupied
+  def is_occupied(self):
+    return self.occupied != None
   
   def __str__(self):
     if self.occupied == 0:
