@@ -201,7 +201,7 @@ seq.play()
 
 # TEST LOGIC BELOW 
 class SequenceTest:
-  def check_winner():
+  def check_winner(self):
     def make_moves(sequence, moves, switch_turn=True):
       random.shuffle(moves)
       for move in moves:
@@ -257,8 +257,3 @@ class SequenceTest:
     assert s7.has_winner() == False
 
     print("All tests passed for check_winner!")
-
-SequenceTest.check_winner()
-
-seq = Sequence()
-seq.play()
