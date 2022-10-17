@@ -166,7 +166,7 @@ class Sequence:
     os.system('cls' if os.name == 'nt' else 'clear')
     print("Turn: ", self.turn)
     print(str(self), end='\r')
-    time.sleep(0.05)
+    time.sleep(0.1)
   
   def __str__(self):
     out = ''

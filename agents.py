@@ -14,7 +14,6 @@ class RandAgent():
     choice = random.choice(hand)
     while choice in self.unneeded or "J" in str(choice):
       choice = random.choice(hand)
-    print(choice)
     for r in range(len(board)):
       for c in range(len(board[0])):
         if not board[r][c].is_occupied() and board[r][c].get_card() == choice:
