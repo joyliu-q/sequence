@@ -60,6 +60,9 @@ class Card:
 class Deck:
   def __init__(self, stacks=1, jokers=True, shuffle=True):
     self.deck = []
+    self.stacks = stacks
+    self.jokers = jokers
+    self.shuffle_deck = shuffle
     self.count = stacks * (54 if jokers else 52)
     for _ in range(stacks):
       for i in range(1, 13):
@@ -77,8 +80,8 @@ class Deck:
   def draw(self):
     self.count -= 1
     card = self.deck.pop(0)
-    if self.count == 0:
-      self.deck = Deck(stacks=self.stacks, jokers=self.jokers, shuffle=False).deck
+    if self.count == 0 or len(self.deck) == 0:
+      self.deck = Deck(stacks=self.stacks, jokers=self.jokers, shuffle=self.shuffle_deck).deck
     return card
     
   def shuffle(self):
