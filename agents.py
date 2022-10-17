@@ -12,7 +12,7 @@ class RandAgent():
   def get_move(self, board, last_move, hand):
     # TODO Jacks are broken cus we didn't implement that
     choice = random.choice(hand)
-    while choice in self.unneeded:
+    while choice in self.unneeded or "J" in str(choice):
       choice = random.choice(hand)
     print(choice)
     for r in range(len(board)):
