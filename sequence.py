@@ -1,6 +1,10 @@
 from cards import Suit, Card, Deck
 from agents import *
 import random, time
+import os
+from utils import ANSIText
+
+ansi = ANSIText()
 
 class Cell:
   def __init__(self, card):
@@ -23,13 +27,13 @@ class Cell:
   
   def __str__(self):
     if self.occupied == 0:
-      return '00'
+      return ansi.green('00')
     elif self.occupied == 1:
-      return '11'
+      return ansi.red('11')
     elif self.occupied == 2:
-      return '**'
+      return ansi.purple('**')
     else:
-      return str(self.card)
+      return ansi.cyan(str(self.card))
 
 # Sequence game class
 class Sequence:
@@ -158,10 +162,10 @@ class Sequence:
   def check_unneeded_cards(self, player):
     return [card for card in self.hands[player] if self.count_occupied(card) >= 2]
 
-  # TODO: do this
   def render(self):
-    print(self)
-    print('\n\n\n\n\n\n\n\n') # TODO: keep this
+    os.system('cls' if os.name == 'nt' else 'clear')
+    print("Turn: ", self.turn)
+    print(str(self), end='\r')
     time.sleep(0.5)
   
   def __str__(self):
