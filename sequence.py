@@ -166,7 +166,7 @@ class Sequence:
     os.system('cls' if os.name == 'nt' else 'clear')
     print("Turn: ", self.turn)
     print(str(self), end='\r')
-    time.sleep(0.5)
+    time.sleep(0.1)
   
   def __str__(self):
     out = ''
@@ -194,7 +194,8 @@ class Sequence:
         self.change_turn()
       self.render()
     print('Game over!')
-    print('Winner is player {}'.format(self.get_winner()))
+    w = self.get_winner()
+    print('Winner is player {}'.format(ansi.red(w) if w == 1 else ansi.green(w)))
 
 seq = Sequence()
 seq.play()
