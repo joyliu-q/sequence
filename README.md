@@ -2,4 +2,4 @@
 Sequence, the game.
 
 ## Demo
-![](Sequence.mov)
+![Demo of Game](assets/demo.gif)
