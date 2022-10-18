@@ -1,8 +1,7 @@
 from cards import Suit, Card, Deck
-from agents import *
-import random, time
-import os
 from utils import ANSIText
+import random, time, os
+from agents import *
 
 ansi = ANSIText()
 
@@ -61,7 +60,7 @@ class Sequence:
     self.board[-1][-1].claim(2)
     self.players = [RandAgent(), RandAgent()]
     self.turn = 0
-    self.fives = [0, 0] # [Green, Blue]
+    self.fives = [0, 0] # [Green, Red]
     self.switch_turn = switch_turn
     self.last_move = None
     self.deck = Deck(2, jokers=False, shuffle=True)

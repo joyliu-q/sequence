@@ -80,8 +80,10 @@ class Deck:
   def draw(self):
     self.count -= 1
     card = self.deck.pop(0)
-    if self.count == 0 or len(self.deck) == 0:
-      self.deck = Deck(stacks=self.stacks, jokers=self.jokers, shuffle=self.shuffle_deck).deck
+    if self.count == 0:
+      new_deck = Deck(stacks=self.stacks, jokers=self.jokers, shuffle=self.shuffle_deck)
+      self.deck = new_deck.deck
+      self.count = new_deck.count
     return card
     
   def shuffle(self):
