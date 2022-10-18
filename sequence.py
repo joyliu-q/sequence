@@ -72,20 +72,35 @@ class Sequence:
   def get_hand(self, player):
     return self.hands[player]
 
-  def make_move(self, position):
+  def check_valid_move(self, position, card):
+    if position == None:
+      return 'Invalid move: No position returned'
+    if card == None:
+      return 'Invalid move: No card returned'
+    row, col = position
+    if row < 0 or row >= self.height or col < 0 or col >= self.width:
+      return 'Invalid move: Position out of bounds'
+    if (row == 0 or row == self.height - 1) and (col == 0 or col == self.width - 1):
+      return 'Invalid move: Position in the corner'
+    if card.rank != 11 and self.board[row][col].get_card() != card:
+      return 'Invalid move: Card does not match intended position'
+    if card.is_one_eyed_jack() and not self.board[row][col].is_occupied():
+      return 'Invalid move: One-eyed jack used on unoccupied position'
+    if (card.rank != 11 or card.is_two_eyed_jack()) and self.board[row][col].is_occupied():
+      return 'Invalid move: Position is occupied'
+    return ''
+
+  def make_move(self, position, is_remove_jack=False):
     # If winner is already decided, don't allow any more moves
     if self.has_winner():
       return
-    # Otherwise, make the move
+    # Otherwise, make the move (already checked as valid move)
     row, col = position
-    if row < 0 or row >= self.height or col < 0 or col >= self.width:
-      return False
-    if self.board[row][col].is_occupied():
-      return False
-    self.board[row][col].claim(self.turn)
-    self.hands[self.turn].append(self.deck.draw())
+    if is_remove_jack:
+      self.board[row][col].unclaim()
+    else:
+      self.board[row][col].claim(self.turn)
     self.last_move = position
-    return True
 
   def check_winner(self, position): # given that the current move is made, is there a winner
     if position == None:
@@ -163,7 +178,7 @@ class Sequence:
 
   def render(self):
     os.system('cls' if os.name == 'nt' else 'clear')
-    print("Turn: ", self.turn)
+    print("Turn: ", self.turn, "  Last move: ", self.last_move)
     print(str(self), end='\r')
     time.sleep(0.1)
   
@@ -184,10 +199,13 @@ class Sequence:
           self.hands[self.turn].append(self.deck.draw())
         unneeded = self.check_unneeded_cards(self.turn)
         replace = self.players[self.turn].get_replacements(unneeded)
-      position, card = self.players[self.turn].get_move(self.board, self.last_move, self.hands[self.turn])
+      position, card = self.players[self.turn].get_move(self.board, self.last_move, self.hands[self.turn], self.turn)
+      is_valid_msg = self.check_valid_move(position, card)
+      if is_valid_msg != '':
+        raise Exception(is_valid_msg)
+      self.make_move(position, is_remove_jack=card.is_one_eyed_jack())
       self.hands[self.turn].remove(card)
-      if position == None or not self.make_move(position):
-        raise Exception('Invalid move')
+      self.hands[self.turn].append(self.deck.draw())
       self.check_winner(position)
       if self.switch_turn:
         self.change_turn()
@@ -196,8 +214,6 @@ class Sequence:
     w = self.get_winner()
     print('Winner is player {}'.format(ansi.red(w) if w == 1 else ansi.green(w)))
 
-seq = Sequence()
-seq.play()
 
 # TEST LOGIC BELOW 
 class SequenceTest:
@@ -233,7 +249,7 @@ class SequenceTest:
 
     # Test 4: Multiple 5 in a row
     s4 = Sequence(switch_turn)
-    moves = [(1, 1), (2, 2), (3, 3), (4, 4), (5, 5), (6, 6), (7, 7), (8, 8), (9, 9), (2, 1), (3, 2), (4, 3), (5, 4), (6, 5), (7, 6), (8, 7), (9, 8), (10, 9)]
+    moves = [(1, 1), (2, 2), (3, 3), (4, 4), (5, 5), (6, 6), (7, 7), (8, 8), (9, 9), (2, 1), (3, 2), (4, 3), (5, 4), (6, 5), (7, 6), (8, 7), (9, 8)]
     s4 = make_moves(s4, moves, switch_turn)
     assert s4.has_winner() == True
 
@@ -257,3 +273,9 @@ class SequenceTest:
     assert s7.has_winner() == False
 
     print("All tests passed for check_winner!")
+
+test = SequenceTest()
+test.check_winner()
+
+seq = Sequence()
+seq.play()

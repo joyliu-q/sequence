@@ -28,15 +28,21 @@ class Card:
     else:
       return str(self.rank)
 
+  def is_one_eyed_jack(self): # One eyed jack = hearts and spades
+    return self.rank == 11 and (self.suit == Suit.HEART or self.suit == Suit.SPADE)
+
+  def is_two_eyed_jack(self): # Two eyed jack = clubs and diamonds
+    return self.rank == 11 and (self.suit == Suit.CLUB or self.suit == Suit.DIAMOND)
+
   def __str__(self):
     out = self.get_rank_str()
-    if self.suit.value == 1:
+    if self.suit == Suit.SPADE:
       return out + 's'
-    elif self.suit.value == 2:
+    elif self.suit == Suit.HEART:
       return out + 'h'
-    elif self.suit.value == 3:
+    elif self.suit == Suit.CLUB:
       return out + 'c'
-    elif self.suit.value == 4:
+    elif self.suit == Suit.DIAMOND:
       return out + 'd'
 
   def __lt__(self, other):
@@ -65,7 +71,7 @@ class Deck:
     self.shuffle_deck = shuffle
     self.count = stacks * (54 if jokers else 52)
     for _ in range(stacks):
-      for i in range(1, 13):
+      for i in range(1, 14):
         for suit in Suit:
           self.deck.append(Card(i, suit))
       if jokers:
@@ -76,15 +82,17 @@ class Deck:
   
   def num_cards_remaining(self):
     return self.count
+
+  def is_empty(self):
+    return self.count == 0
   
   def draw(self):
-    self.count -= 1
-    card = self.deck.pop(0)
-    if self.count == 0:
+    if self.is_empty():
       new_deck = Deck(stacks=self.stacks, jokers=self.jokers, shuffle=self.shuffle_deck)
       self.deck = new_deck.deck
       self.count = new_deck.count
-    return card
+    self.count -= 1
+    return self.deck.pop(0)
     
   def shuffle(self):
     random.shuffle(self.deck)
