@@ -189,6 +189,8 @@ class Sequence:
     return out
 
   def play(self):
+    # TODO: Fix check for win if the two fives overlap
+    # TODO: Add tie state if board is filled and neither (or next?) player has one-eyed jack
     self.render()
     while not self.has_winner():
       unneeded = self.check_unneeded_cards(self.turn)
