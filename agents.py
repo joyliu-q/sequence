@@ -3,14 +3,15 @@ import random
 
 class RandAgent():
 
-  def __init__(self):
+  def __init__(self, agent_turn=0):
+    self.agent_turn = agent_turn
     self.unneeded = []
 
   def get_replacements(self, unneeded):
     self.unneeded = unneeded
     return unneeded # which cards to replace from your current unneeded cards in hand
 
-  def get_move(self, board, last_move, hand, agent_turn):
+  def get_move(self, board, last_move, hand):
     valid_positions = []
     while len(valid_positions) == 0:
       choice = random.choice(hand)
@@ -23,7 +24,7 @@ class RandAgent():
               if not board[r][c].is_occupied() and board[r][c].get_card() == choice:
                 valid_positions.append((r, c))
             elif choice.is_one_eyed_jack(): # one-eyed jack
-              if board[r][c].is_occupied() and board[r][c].occupied != agent_turn:
+              if board[r][c].is_occupied() and board[r][c].occupied != self.agent_turn:
                 valid_positions.append((r, c))
             elif choice.is_two_eyed_jack(): # two-eyed jack
               if not board[r][c].is_occupied():

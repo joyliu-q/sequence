@@ -68,7 +68,7 @@ class Sequence:
   def __init__(self, switch_turn=True):
     self.switch_turn = switch_turn
     self.reset()
-    self.players = [RandAgent(), RandAgent()]
+    self.players = [RandAgent(0), RandAgent(1)]
     self.height = len(self.board)
     self.width = len(self.board[0])
 
@@ -241,7 +241,7 @@ class Sequence:
           self.hands[self.turn].append(self.deck.draw())
         unneeded = self.check_unneeded_cards(self.turn)
         replace = self.players[self.turn].get_replacements(unneeded)
-      position, card = self.players[self.turn].get_move(self.board, self.last_move, self.hands[self.turn], self.turn)
+      position, card = self.players[self.turn].get_move(self.board, self.last_move, self.hands[self.turn])
       is_valid_msg = self.check_valid_move(position, card)
       if is_valid_msg != '':
         raise Exception(is_valid_msg)
