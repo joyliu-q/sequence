@@ -137,10 +137,10 @@ class Sequence:
   def check_winner(self, position=None): # given that the current move is made, is there a winner
     if position == None:
       return self.check_winner_entire_board()
-    row_offset = [(0, -4), (0, -3), (0, -2), (0, -1), (0, 0), (0, 1), (0, 2), (0, 3), (0, 4)]
-    col_offset = [(-4, 0), (-3, 0), (-2, 0), (-1, 0), (0, 0), (1, 0), (2, 0), (3, 0), (4, 0)]
-    diag_offset_1 = [(-4, -4), (-3, -3), (-2, -2), (-1, -1), (0, 0), (1, 1), (2, 2), (3, 3), (4, 4)]
-    diag_offset_2 = [(-4, 4), (-3, 3), (-2, 2), (-1, 1), (0, 0), (1, -1), (2, -2), (3, -3), (4, -4)]
+    row_offset = [(0, x) for x in range(-4, 5)]
+    col_offset = [(x, 0) for x in range(-4, 5)]
+    diag_offset_1 = [(x, x) for x in range(-4, 5)]
+    diag_offset_2 = [(x, -x) for x in range(-4, 5)]
     offsets = [row_offset, col_offset, diag_offset_1, diag_offset_2]
     row, col = position
     for which_offset in offsets:
@@ -162,34 +162,19 @@ class Sequence:
 
   def check_winner_entire_board(self):
     fives = [[], []]
-    for r in range(self.height):
-      for c in range(self.width - 4):
-        positions = [(r, c), (r, c + 1), (r, c + 2), (r, c + 3), (r, c + 4)]
-        owner = Cell.has_same_owner([self.board[y][x] for y, x in positions])
-        if owner != -1 and owner != 2:
-          if self.is_five_unique(positions, fives[owner]):
-            fives[owner].append(positions)
-    for r in range(self.height - 4):
-      for c in range(self.width):
-        positions = [(r, c), (r + 1, c), (r + 2, c), (r + 3, c), (r + 4, c)]
-        owner = Cell.has_same_owner([self.board[r][c] for r, c in positions])
-        if owner != -1 and owner != 2:
-          if self.is_five_unique(positions, fives[owner]):
-            fives[owner].append(positions)
-    for r in range(self.height - 4):
-      for c in range(self.width - 4):
-        positions = [(r, c), (r + 1, c + 1), (r + 2, c + 2), (r + 3, c + 3), (r + 4, c + 4)]
-        owner = Cell.has_same_owner([self.board[r][c] for r, c in positions])
-        if owner != -1 and owner != 2:
-          if self.is_five_unique(positions, fives[owner]):
-            fives[owner].append(positions)
-    for r in range(4, self.height):
-      for c in range(self.width - 4):
-        positions = [(r, c), (r - 1, c + 1), (r - 2, c + 2), (r - 3, c + 3), (r - 4, c + 4)]
-        owner = Cell.has_same_owner([self.board[r][c] for r, c in positions])
-        if owner != -1 and owner != 2:
-          if self.is_five_unique(positions, fives[owner]):
-            fives[owner].append(positions)
+    row_offset = [(0, x) for x in range(5)]
+    col_offset = [(x, 0) for x in range(5)]
+    diag_offset_1 = [(x, x) for x in range(5)]
+    diag_offset_2 = [(x, -x) for x in range(5)]
+    offsets = [(row_offset, (0, self.height), (0, self.width - 4)), (col_offset, (0, self.height - 4), (0, self.width)), (diag_offset_1, (0, self.height - 4), (0, self.width - 4)), (diag_offset_2, (0, self.height - 4), (4, self.width))]
+    for o in offsets:
+      for r in range(o[1][0], o[1][1]):
+        for c in range(o[2][0], o[2][1]):
+          five = [(r + offset[0], c + offset[1]) for offset in o[0]]
+          owner = Cell.has_same_owner([self.board[y][x] for y, x in five])
+          if owner != -1 and owner != 2:
+            if self.is_five_unique(five, fives[owner]):
+              fives[owner].append(five)
     self.fives = fives
     return self.has_winner()
   
