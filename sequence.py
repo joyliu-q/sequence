@@ -1,6 +1,6 @@
 from cards import Suit, Card, Deck
 from utils import ANSIText
-import random, time, os
+import time, os
 from agents import *
 
 ansi = ANSIText()
@@ -8,7 +8,7 @@ ansi = ANSIText()
 class Cell:
   def __init__(self, card):
     self.card = card
-    self.occupied = None # occupied is either None, Green (0), or Blue (1), or Both (2)
+    self.occupied = None # occupied is either None, Green (0), or Red (1), or Both (2)
 
   def get_card(self):
     return self.card
@@ -51,17 +51,22 @@ class Sequence:
     ]
 
   def __init__(self, switch_turn=True):
-    self.board = [[Cell(c) for c in row] for row in Sequence.CARD_POSITIONS]
+    self.switch_turn = switch_turn
+    self.reset()
+    self.players = [RandAgent(), RandAgent()]
     self.height = len(self.board)
     self.width = len(self.board[0])
+
+  def reset(self, switch_turn=None):
+    if switch_turn != None:
+      self.switch_turn = switch_turn
+    self.board = [[Cell(c) for c in row] for row in Sequence.CARD_POSITIONS]
     self.board[0][0].claim(2)
     self.board[-1][0].claim(2)
     self.board[0][-1].claim(2)
     self.board[-1][-1].claim(2)
-    self.players = [RandAgent(), RandAgent()]
     self.turn = 0
-    self.fives = [0, 0] # [Green, Red]
-    self.switch_turn = switch_turn
+    self.fives = [0, 0]
     self.last_move = None
     self.deck = Deck(2, jokers=False, shuffle=True)
     self.hands = [[], []]
@@ -77,6 +82,8 @@ class Sequence:
       return 'Invalid move: No position returned'
     if card == None:
       return 'Invalid move: No card returned'
+    if card not in self.hands[self.turn]:
+      return 'Invalid move: Card not owned'
     row, col = position
     if row < 0 or row >= self.height or col < 0 or col >= self.width:
       return 'Invalid move: Position out of bounds'
@@ -150,7 +157,7 @@ class Sequence:
 
     return self.has_winner()
   
-  # State retrieval functions 
+  # State retrieval functions
   def has_winner(self):
     return self.get_winner() != None
 
@@ -159,31 +166,43 @@ class Sequence:
       return 0
     elif self.fives[1] >= 2:
       return 1
+    elif self.is_tie():
+      return -1
     else:
       return None
-  
-  def change_turn(self):
-    self.turn = int(not self.turn)
 
-  def count_occupied(self, card):
+  def is_tie(self):
+    has_remove = False
+    for card in self.hands[1 - self.turn]:
+      if card.is_one_eyed_jack():
+        has_remove = True
+    return not has_remove and self.is_full()
+
+  def is_full(self):
+    return self.count_occupied() == self.height * self.width
+
+  def count_occupied(self, card=None):
     count = 0
     for row in self.board:
       for cell in row:
-        if cell.is_occupied() and cell.card == card:
+        if cell.is_occupied() and (card == None or cell.card == card):
           count += 1
     return count
 
   def check_unneeded_cards(self, player):
     return [card for card in self.hands[player] if self.count_occupied(card) >= 2]
 
+  def change_turn(self):
+    self.turn = int(not self.turn)
+
   def render(self):
     os.system('cls' if os.name == 'nt' else 'clear')
-    print("Turn: ", self.turn, "  Last move: ", self.last_move)
     print(str(self), end='\r')
-    time.sleep(0.1)
+    #time.sleep(0.1)
   
   def __str__(self):
-    out = ''
+    out = "Turn:  " + (ansi.green(self.turn) if self.turn == 0 else ansi.red(self.turn))
+    out += "  Last move:  " + (ansi.green(self.last_move) if self.turn == 0 else ansi.red(self.last_move)) + '\n'
     for row in self.board:
       out += ' '.join(map(str, row)) + '\n'
     return out
@@ -209,75 +228,13 @@ class Sequence:
       self.hands[self.turn].remove(card)
       self.hands[self.turn].append(self.deck.draw())
       self.check_winner(position)
+      self.render()
       if self.switch_turn:
         self.change_turn()
-      self.render()
     print('Game over!')
     w = self.get_winner()
-    print('Winner is player {}'.format(ansi.red(w) if w == 1 else ansi.green(w)))
-
-
-# TEST LOGIC BELOW 
-class SequenceTest:
-  def check_winner(self):
-    def make_moves(sequence, moves, switch_turn=True):
-      random.shuffle(moves)
-      for move in moves:
-        sequence.make_move(move)
-        sequence.check_winner(move)
-        if switch_turn:
-          sequence.change_turn()
-      return sequence
-
-    # Test check_winner
-    # Test 1: 5 in a row horizontally
-    switch_turn = False
-    s1 = Sequence(switch_turn)
-    moves = [(1, 1), (1, 2), (1, 3), (1, 4), (1, 5), (2, 1), (2, 2), (2, 3), (2, 4), (2, 5)]
-    s1 = make_moves(s1, moves, switch_turn)
-    assert s1.has_winner() == True
-
-    # Test 2: 5 in a row vertically
-    s2 = Sequence(switch_turn)
-    moves = [(1, 1), (2, 1), (3, 1), (4, 1), (5, 1), (2, 1), (2, 2), (2, 3), (2, 4), (2, 5)]
-    s2 = make_moves(s2, moves, switch_turn)
-    assert s2.has_winner() == True
-
-    # Test 3: 5 in a row diagonally
-    s3 = Sequence(switch_turn)
-    moves = [(1, 1), (2, 2), (3, 3), (4, 4), (5, 5), (2, 1), (3, 2), (4, 3), (5, 4), (6, 5)]
-    s3 = make_moves(s3, moves, switch_turn)
-    assert s3.has_winner() == True
-
-    # Test 4: Multiple 5 in a row
-    s4 = Sequence(switch_turn)
-    moves = [(1, 1), (2, 2), (3, 3), (4, 4), (5, 5), (6, 6), (7, 7), (8, 8), (9, 9), (2, 1), (3, 2), (4, 3), (5, 4), (6, 5), (7, 6), (8, 7), (9, 8)]
-    s4 = make_moves(s4, moves, switch_turn)
-    assert s4.has_winner() == True
-
-    # Test 5: 5 in a row with corners
-    s5 = Sequence(switch_turn)
-    moves = [(0, 0), (1, 1), (2, 2), (3, 3), (4, 4), (9, 0), (9, 1), (9, 2), (9, 3), (9, 4)]
-    s5 = make_moves(s5, moves, switch_turn)
-    assert s5.has_winner() == True
-
-    # Test 6: No 5 in a row
-    s6 = Sequence(switch_turn)
-    moves = [(1, 1), (3, 2), (2, 3), (4, 4), (5, 5)]
-    s6 = make_moves(s6, moves, switch_turn)
-    assert s6.has_winner() == False
-
-    # Test 7: 5 in a row but separate players
-    switch_turn = True
-    s7 = Sequence(switch_turn)
-    moves = [(1, 1), (1, 2), (1, 3), (1, 4), (1, 5), (9, 0), (9, 1), (9, 2), (9, 3), (9, 4)]
-    s7 = make_moves(s7, moves, switch_turn)
-    assert s7.has_winner() == False
-
-    print("All tests passed for check_winner!")
-
-test = SequenceTest()
-test.check_winner()
-
-seq = Sequence()
-seq.play()
+    if w == -1:
+      print('Tie game!')
+    else:
+      print('Winner is player {}'.format(ansi.red(w) if w == 1 else ansi.green(w)))
+    return w
