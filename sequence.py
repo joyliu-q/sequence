@@ -34,6 +34,21 @@ class Cell:
     else:
       return ansi.cyan(str(self.card))
 
+  @staticmethod
+  def has_same_owner(cells):
+    owners = set()
+    for cell in cells:
+      if cell.occupied == None:
+        return -1
+      owners.add(cell.occupied)
+    owners = list(owners)
+    if 2 in owners and len(owners) == 2:
+      owners.remove(2)
+      return owners[0]
+    elif len(owners) == 1:
+      return owners[0]
+    return -1
+
 # Sequence game class
 class Sequence:
 
@@ -66,7 +81,7 @@ class Sequence:
     self.board[0][-1].claim(2)
     self.board[-1][-1].claim(2)
     self.turn = 0
-    self.fives = [0, 0]
+    self.fives = [[], []]
     self.last_move = None
     self.deck = Deck(2, jokers=False, shuffle=True)
     self.hands = [[], []]
@@ -108,53 +123,74 @@ class Sequence:
     else:
       self.board[row][col].claim(self.turn)
     self.last_move = position
+  
+  def is_five_unique(self, new_five, previous_fives):
+    for prev_five in previous_fives:
+      overlap = 0
+      for cell in prev_five:
+        if cell in new_five:
+          overlap += 1
+      if overlap > 1:
+        return False
+    return True
 
-  def check_winner(self, position): # given that the current move is made, is there a winner
+  def check_winner(self, position=None): # given that the current move is made, is there a winner
     if position == None:
-      return False
+      return self.check_winner_entire_board()
     row_offset = [(0, -4), (0, -3), (0, -2), (0, -1), (0, 0), (0, 1), (0, 2), (0, 3), (0, 4)]
     col_offset = [(-4, 0), (-3, 0), (-2, 0), (-1, 0), (0, 0), (1, 0), (2, 0), (3, 0), (4, 0)]
-    diag_offset = [(-4, -4), (-3, -3), (-2, -2), (-1, -1), (0, 0), (1, 1), (2, 2), (3, 3), (4, 4)]
-
+    diag_offset_1 = [(-4, -4), (-3, -3), (-2, -2), (-1, -1), (0, 0), (1, 1), (2, 2), (3, 3), (4, 4)]
+    diag_offset_2 = [(-4, 4), (-3, 3), (-2, 2), (-1, 1), (0, 0), (1, -1), (2, -2), (3, -3), (4, -4)]
+    offsets = [row_offset, col_offset, diag_offset_1, diag_offset_2]
     row, col = position
+    for which_offset in offsets:
+      acc = 0
+      for i, offset in enumerate(which_offset):
+        new_pos = (row + offset[0], col + offset[1])
+        if new_pos[0] < 0 or new_pos[0] >= self.height or new_pos[1] < 0 or new_pos[1] >= self.width:
+          continue
+        if self.board[new_pos[0]][new_pos[1]].occupied == self.turn or self.board[new_pos[0]][new_pos[1]].occupied == 2:
+          acc += 1
+          if acc == 5:
+            five = [(new_pos[0] + r, new_pos[1] + c) for r, c in which_offset[i-4:i+1]]
+            if self.is_five_unique(five, self.fives[self.turn]):
+              self.fives[self.turn].append(five)
+              break
+        else:
+          acc = 0
+    return self.has_winner()
 
-    row_acc = 0
-    # In all tiles in row offset, if there's any consecutive 5 of the same occupied, increment by 1
-    for offset in row_offset:
-      new_pos = (row + offset[0], col + offset[1])
-      if new_pos[0] < 0 or new_pos[0] >= self.height or new_pos[1] < 0 or new_pos[1] >= self.width:
-        continue
-      if self.board[new_pos[0]][new_pos[1]].occupied == self.turn or self.board[new_pos[0]][new_pos[1]].occupied == 2:
-        row_acc += 1
-        if row_acc == 5:
-          self.fives[self.turn] += 1
-      else:
-        row_acc = 0
-    
-    col_acc = 0
-    for offset in col_offset:
-      new_pos = (row + offset[0], col + offset[1])
-      if new_pos[0] < 0 or new_pos[0] >= self.height or new_pos[1] < 0 or new_pos[1] >= self.width:
-        continue
-      if self.board[new_pos[0]][new_pos[1]].occupied == self.turn or self.board[new_pos[0]][new_pos[1]].occupied == 2:
-        col_acc += 1
-        if col_acc == 5:
-          self.fives[self.turn] += 1
-      else:
-        col_acc = 0
-    
-    diag_acc = 0
-    for offset in diag_offset:
-      new_pos = (row + offset[0], col + offset[1])
-      if new_pos[0] < 0 or new_pos[0] >= self.height or new_pos[1] < 0 or new_pos[1] >= self.width:
-        continue
-      if self.board[new_pos[0]][new_pos[1]].occupied == self.turn or self.board[new_pos[0]][new_pos[1]].occupied == 2:
-        diag_acc += 1
-        if diag_acc == 5:
-          self.fives[self.turn] += 1
-      else:
-        diag_acc = 0
-
+  def check_winner_entire_board(self):
+    fives = [[], []]
+    for r in range(self.height):
+      for c in range(self.width - 4):
+        positions = [(r, c), (r, c + 1), (r, c + 2), (r, c + 3), (r, c + 4)]
+        owner = Cell.has_same_owner([self.board[y][x] for y, x in positions])
+        if owner != -1 and owner != 2:
+          if self.is_five_unique(positions, fives[owner]):
+            fives[owner].append(positions)
+    for r in range(self.height - 4):
+      for c in range(self.width):
+        positions = [(r, c), (r + 1, c), (r + 2, c), (r + 3, c), (r + 4, c)]
+        owner = Cell.has_same_owner([self.board[r][c] for r, c in positions])
+        if owner != -1 and owner != 2:
+          if self.is_five_unique(positions, fives[owner]):
+            fives[owner].append(positions)
+    for r in range(self.height - 4):
+      for c in range(self.width - 4):
+        positions = [(r, c), (r + 1, c + 1), (r + 2, c + 2), (r + 3, c + 3), (r + 4, c + 4)]
+        owner = Cell.has_same_owner([self.board[r][c] for r, c in positions])
+        if owner != -1 and owner != 2:
+          if self.is_five_unique(positions, fives[owner]):
+            fives[owner].append(positions)
+    for r in range(4, self.height):
+      for c in range(self.width - 4):
+        positions = [(r, c), (r - 1, c + 1), (r - 2, c + 2), (r - 3, c + 3), (r - 4, c + 4)]
+        owner = Cell.has_same_owner([self.board[r][c] for r, c in positions])
+        if owner != -1 and owner != 2:
+          if self.is_five_unique(positions, fives[owner]):
+            fives[owner].append(positions)
+    self.fives = fives
     return self.has_winner()
   
   # State retrieval functions
@@ -162,9 +198,9 @@ class Sequence:
     return self.get_winner() != None
 
   def get_winner(self):
-    if self.fives[0] >= 2:
+    if len(self.fives[0]) >= 2:
       return 0
-    elif self.fives[1] >= 2:
+    elif len(self.fives[1]) >= 2:
       return 1
     elif self.is_tie():
       return -1
