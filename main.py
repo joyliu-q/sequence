@@ -22,14 +22,14 @@ def play_games(n, render=True):
     w = seq.play(render=render)
     counts[w] += 1
     seq.reset()
-    if i % 50 == 0:
-      print(i)
+    if i % 100 == 0:
+      print(i, counts)
   return counts
 
-def start_display():
+'''def start_display():
   window.update()
-  window.start()
-
+  window.start()'''
 #start_display()
-counts = play_games(200, render=False)
+
+counts = play_games(1000, render=False)
 print(counts)
