@@ -1,4 +1,3 @@
-from cards import Suit, Card, Deck
 import random
 
 class RandAgent():

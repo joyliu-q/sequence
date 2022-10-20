@@ -1,7 +1,8 @@
 from cards import Suit, Card, Deck
 from utils import ANSIText
 import time, os
-from agents import *
+from agents.tobi import *
+from agents.randagent import *
 
 ansi = ANSIText()
 
@@ -68,7 +69,7 @@ class Sequence:
   def __init__(self, switch_turn=True):
     self.switch_turn = switch_turn
     self.reset()
-    self.players = [RandAgent(0), RandAgent(1)]
+    self.players = [Tobi(0), RandAgent(1)]
     self.height = len(self.board)
     self.width = len(self.board[0])
 
@@ -216,10 +217,10 @@ class Sequence:
   def change_turn(self):
     self.turn = int(not self.turn)
 
-  def render(self):
+  def render(self, delay=0):
     os.system('cls' if os.name == 'nt' else 'clear')
     print(str(self), end='\r')
-    #time.sleep(0.1)
+    time.sleep(delay)
   
   def __str__(self):
     out = "Turn:  " + (ansi.green(self.turn) if self.turn == 0 else ansi.red(self.turn))
@@ -228,8 +229,9 @@ class Sequence:
       out += ' '.join(map(str, row)) + '\n'
     return out
 
-  def play(self):
-    self.render()
+  def play(self, render=True, delay=0):
+    if render:
+      self.render(delay)
     while not self.has_winner():
       unneeded = self.check_unneeded_cards(self.turn)
       replace = self.players[self.turn].get_replacements(unneeded)
@@ -247,13 +249,9 @@ class Sequence:
       self.hands[self.turn].remove(card)
       self.hands[self.turn].append(self.deck.draw())
       self.check_winner(position)
-      self.render()
+      if render:
+        self.render(delay)
       if self.switch_turn:
         self.change_turn()
-    print('Game over!')
     w = self.get_winner()
-    if w == -1:
-      print('Tie game!')
-    else:
-      print('Winner is player {}'.format(ansi.red(w) if w == 1 else ansi.green(w)))
     return w
